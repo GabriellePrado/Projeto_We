@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using We._Project.Model;
 using We._Project.Repository.Interface;
-using We._Project.Service.Interface;
 
 namespace We._Project.Controllers
 {
-
+  
     [ApiController]
     [Route("api/[controller]")]
     public class ColaboradorController : ControllerBase
@@ -29,6 +26,7 @@ namespace We._Project.Controllers
 
             return Ok(_colaboradorRepository.GetAll());
         }
+       
 
         [HttpGet("{cpf}")]
         public  IActionResult Get(string cpf)

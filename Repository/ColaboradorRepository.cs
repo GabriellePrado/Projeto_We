@@ -31,7 +31,11 @@ namespace We._Project.Repository
         {
             try
             {
-                const string sql = @"SELECT * FROM  dbo.colaborador";
+                const string sql = @"SELECT  C.cpf, C.matricula, C.nome_completo, C.data_admissao, 
+                                    C.status_contrato, C.departamento_colaborador, D.cargo 
+                        FROM dbo.colaborador C 
+                        INNER JOIN dbo.departamento D ON D.id = C.departamento_colaborador
+";
 
                 return _dbConnector.Query<Colaborador>(sql);
             }
@@ -41,12 +45,17 @@ namespace We._Project.Repository
             }
         }
 
-
         public async Task<string> CreateAsync(Colaborador colaborador)
         {
             string retorno = "Usuario inserido com sucesso";
             try
             {
+                //validar se matricula e cpf ja existe na base
+                if (GetByCpfAsync(colaborador.Cpf) != null || GetByMatriculaAsync(colaborador.Matricula) != null)
+                {
+                    return "Cpf já existente";
+                }
+
                 _dbConnector.Open();
                 string sql = @"INSERT INTO [dbo].[Colaborador]
                                     ([cpf]
@@ -71,7 +80,7 @@ namespace We._Project.Repository
                     Nome_completo = colaborador.Nome_completo,
                     Data_admissao = colaborador.Data_admissao,
                     Status_contrato = colaborador.Status_contrato,
-                    Departamento_colaborador = colaborador.departamento_colaborador
+                    Departamento_colaborador = colaborador.Departamento_colaborador
                 });
 
 
@@ -91,8 +100,11 @@ namespace We._Project.Repository
         {
             try
             {
-                _dbConnector.Open();
-                string sql = @"UPDATE [dbo].[Colaborador]
+                //se colaborador ja esta na base e esta desligado, reativar o 
+                if (GetByCpfAsync(colaborador.Cpf) != null || GetByMatriculaAsync(colaborador.Matricula) != null)
+                {
+                    _dbConnector.Open();
+                    string sql = @"UPDATE [dbo].[Colaborador]
                                   SET [cpf] = @CPF
                                     ,[matricula] = @Matricula
                                     ,[nome_completo] = @Nome_completo
@@ -102,18 +114,20 @@ namespace We._Project.Repository
                                    
                                 WHERE Cpf = @Cpf";
 
-                await _dbConnector.ExecuteAsync(sql, new
-                {
-                    Cpf = colaborador.Cpf,
-                    Matricula = colaborador.Matricula,
-                    Nome_completo = colaborador.Nome_completo,
-                    Data_admissao = colaborador.Data_admissao,
-                    Status_contrato = colaborador.Status_contrato,
-                    Departamento_colaborador = colaborador.departamento_colaborador
-                });
+                    await _dbConnector.ExecuteAsync(sql, new
+                    {
+                        Cpf = colaborador.Cpf,
+                        Matricula = colaborador.Matricula,
+                        Nome_completo = colaborador.Nome_completo,
+                        Data_admissao = colaborador.Data_admissao,
+                        Status_contrato = colaborador.Status_contrato,
+                        Departamento_colaborador = colaborador.Departamento_colaborador
+                    });
 
-                var colaboradorAtualizado = GetByCpfAsync(colaborador.Cpf);
-                return colaborador;
+                    var colaboradorAtualizado = GetByCpfAsync(colaborador.Cpf);
+                    return colaborador;
+                }
+                return null;
 
             }
             catch (Exception e)
@@ -145,32 +159,58 @@ namespace We._Project.Repository
         {
             try
             {
+
                 var sql = $"SELECT * FROM [dbo].[Colaborador] WHERE cpf = @Cpf";
-                var colaboradors = _dbConnector.Query<Colaborador>(sql, new { cpf = cpf }).ToList();
-                return colaboradors;
+                var colaborador = _dbConnector.Query<Colaborador>(sql, new { cpf = cpf }).ToList();
+                if (colaborador != null)
+                {
+                    return colaborador;
+                }
+                return null;
             }
             catch (Exception e)
             {
-                throw new Exception("Erro ao atualizar" + e.Message);
+                throw new Exception("Erro: " + e.Message);
+            }
+
+        }
+        public List<Colaborador> GetByMatriculaAsync(int matricula)
+        {
+            try
+            {
+                var sql = $"SELECT * FROM [dbo].[Colaborador] WHERE matricula = @Matricula";
+                var colaborador = _dbConnector.Query<Colaborador>(sql, new { matricula = matricula }).ToList();
+                if (colaborador != null)
+                {
+                    return colaborador;
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Erro: " + e.Message);
             }
 
 
         }
-        //public async Task<Colaborador> ExistsByCpfAsync(string colaboradorCpf)
-        //{
-        //    try
-        //    {
-        //        string sql = $"{baseSql} AND cpf = @Cpf";
+        public async Task<Colaborador> ExistsByCpfAsync(string cpf)
+        {
+            try
+            {
+                string sql = $"{baseSql} AND cpf = @Cpf";
 
-        //        var colaboradors = await _dbConnector.QueryAsync<Colaborador>(sql, new { Cpf = colaboradorCpf });
+                var colaboradors = await _dbConnector.QueryAsync<Colaborador>(sql, new { Cpf = cpf });
 
-        //        return colaboradors.FirstOrDefault();
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception("Erro ao atualizar" + e.Message);
-        //    }
-        //}
+                return colaboradors.FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Erro ao buscar colaborador " + e.Message);
+            }
+        }
+
+
+
         //public async Task<List<Colaborador>> ListByFilterAsync(string colaboradorCpf = null, string name = null)
         //{
         //    string sql = $"{baseSql} ";

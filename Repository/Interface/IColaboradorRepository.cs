@@ -9,7 +9,7 @@ namespace We._Project.Repository.Interface
     public interface IColaboradorRepository
     {
         public IEnumerable<Colaborador> GetAll();
-
+       
         public Task<string> CreateAsync(Colaborador colaborador);
         public Task<Colaborador> UpdateAsync(Colaborador colaborador);
 

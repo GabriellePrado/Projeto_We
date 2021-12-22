@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using We._Project.ConnectionFactory.Interface;
 using We._Project.Model;
 using We._Project.Repository.Interface;
 
@@ -12,8 +13,9 @@ namespace We._Project.Repository
 {
     public class ColaboradorRepository : IColaboradorRepository
     {
-        private readonly IDbConnection _dbConnector;
-        public ColaboradorRepository(IDbConnection dbConnector)
+        private readonly IDBConnector _dbConnector;
+        
+        public ColaboradorRepository(IDBConnector dbConnector)
         {
             _dbConnector = dbConnector;
         }
@@ -37,7 +39,7 @@ namespace We._Project.Repository
                         INNER JOIN dbo.departamento D ON D.id = C.departamento_colaborador
 ";
 
-                return _dbConnector.Query<Colaborador>(sql);
+                return _dbConnector.dbConnection.Query<Colaborador>(sql);
             }
             catch (Exception e)
             {
@@ -56,7 +58,7 @@ namespace We._Project.Repository
                     return "Cpf já existente";
                 }
 
-                _dbConnector.Open();
+                _dbConnector.dbConnection.Open();
                 string sql = @"INSERT INTO [dbo].[Colaborador]
                                     ([cpf]
                                     ,[matricula]
@@ -73,7 +75,7 @@ namespace We._Project.Repository
                                     ,@Status_Contrato
                                     ,@Departamento_colaborador)";
 
-                await _dbConnector.ExecuteAsync(sql, new
+                await _dbConnector.dbConnection.ExecuteAsync(sql, new
                 {
                     Cpf = colaborador.Cpf,
                     Matricula = colaborador.Matricula,
@@ -92,7 +94,7 @@ namespace We._Project.Repository
             }
             finally
             {
-                _dbConnector.Close();
+                _dbConnector.dbConnection.Close();
             }
 
         }
@@ -103,7 +105,7 @@ namespace We._Project.Repository
                 //se colaborador ja esta na base e esta desligado, reativar o 
                 if (GetByCpfAsync(colaborador.Cpf) != null || GetByMatriculaAsync(colaborador.Matricula) != null)
                 {
-                    _dbConnector.Open();
+                    _dbConnector.dbConnection.Open();
                     string sql = @"UPDATE [dbo].[Colaborador]
                                   SET [cpf] = @CPF
                                     ,[matricula] = @Matricula
@@ -114,7 +116,7 @@ namespace We._Project.Repository
                                    
                                 WHERE Cpf = @Cpf";
 
-                    await _dbConnector.ExecuteAsync(sql, new
+                    await _dbConnector.dbConnection.ExecuteAsync(sql, new
                     {
                         Cpf = colaborador.Cpf,
                         Matricula = colaborador.Matricula,
@@ -136,7 +138,7 @@ namespace We._Project.Repository
             }
             finally
             {
-                _dbConnector.Close();
+                _dbConnector.dbConnection.Close();
             }
         }
 
@@ -146,7 +148,7 @@ namespace We._Project.Repository
             try
             {
                 sql = $"DELETE FROM [dbo].[Colaborador] WHERE cpf = @Cpf";
-                await _dbConnector.ExecuteAsync(sql, new { Cpf = cpf });
+                await _dbConnector.dbConnection.ExecuteAsync(sql, new { Cpf = cpf });
 
             }
             catch (Exception e)
@@ -161,7 +163,7 @@ namespace We._Project.Repository
             {
 
                 var sql = $"SELECT * FROM [dbo].[Colaborador] WHERE cpf = @Cpf";
-                var colaborador = _dbConnector.Query<Colaborador>(sql, new { cpf = cpf }).ToList();
+                var colaborador = _dbConnector.dbConnection.Query<Colaborador>(sql, new { cpf = cpf }).ToList();
                 if (colaborador != null)
                 {
                     return colaborador;
@@ -179,7 +181,7 @@ namespace We._Project.Repository
             try
             {
                 var sql = $"SELECT * FROM [dbo].[Colaborador] WHERE matricula = @Matricula";
-                var colaborador = _dbConnector.Query<Colaborador>(sql, new { matricula = matricula }).ToList();
+                var colaborador = _dbConnector.dbConnection.Query<Colaborador>(sql, new { matricula = matricula }).ToList();
                 if (colaborador != null)
                 {
                     return colaborador;
@@ -199,7 +201,7 @@ namespace We._Project.Repository
             {
                 string sql = $"{baseSql} AND cpf = @Cpf";
 
-                var colaboradors = await _dbConnector.QueryAsync<Colaborador>(sql, new { Cpf = cpf });
+                var colaboradors = await _dbConnector.dbConnection.QueryAsync<Colaborador>(sql, new { Cpf = cpf });
 
                 return colaboradors.FirstOrDefault();
             }
@@ -221,7 +223,7 @@ namespace We._Project.Repository
         //    if (!string.IsNullOrWhiteSpace(name))
         //        sql += "AND Nome_completo like @nome_completo";
 
-        //    var colaboradors = await _dbConnector.QueryAsync<Colaborador>(sql, new { Cpf = colaboradorCpf, Nome_completo = "%" + name + "%" });
+        //    var colaboradors = await _dbConnector.dbConnection.QueryAsync<Colaborador>(sql, new { Cpf = colaboradorCpf, Nome_completo = "%" + name + "%" });
 
         //    return colaboradors.ToList();
         //}

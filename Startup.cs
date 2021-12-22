@@ -9,6 +9,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using We._Project.ConnectionFactory;
+using We._Project.ConnectionFactory.Interface;
+using We._Project.ConnectionFactory.UnitOfWork;
+using We._Project.ConnectionFactory.UnitOfWork.Interface;
 using We._Project.Repository;
 using We._Project.Repository.Interface;
 using We._Project.Service;
@@ -38,16 +42,19 @@ namespace We._Project
             services.AddApplicationInsightsTelemetry();
 
             string connectionString = Configuration.GetConnectionString("default");
-            services.AddTransient<IDbConnection>((sp) => new SqlConnection(connectionString));
+            services.AddScoped<IDBConnector>(db => new DBConnector(connectionString));
 
-            //Repositores
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
+
+
 
             services.AddCors(option => option.AddPolicy(name: DefaultCorsPolicy, builder =>
            {
                builder.WithOrigins("*");
            }));
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -68,7 +75,7 @@ namespace We._Project
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "We._Project v1"));
             }
             app.UseStaticFiles();
-            
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -84,7 +91,7 @@ namespace We._Project
                 endpoints.MapControllers();
             });
             //configurçao cors
-         
+
 
         }
     }

@@ -4,15 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using We._Project.Model;
 using We._Project.Repository;
+using We._Project.Repository.Interface;
 using We._Project.Service.Interface;
 
 namespace We._Project.Service
 {
     public class ColaboradorService : IColaboradorService
     {
-        public ColaboradorRepository _repository;
+        public IColaboradorRepository _repository;
 
-        public ColaboradorService(ColaboradorRepository colaboradorRepository)
+        public ColaboradorService(IColaboradorRepository colaboradorRepository)
         {
             colaboradorRepository = _repository;
         }

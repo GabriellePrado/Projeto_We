@@ -6,9 +6,13 @@
 
   <ItemGroup>
     <Compile Remove="View\**" />
+    <Compile Remove="We\**" />
     <Content Remove="View\**" />
+    <Content Remove="We\**" />
     <EmbeddedResource Remove="View\**" />
+    <EmbeddedResource Remove="We\**" />
     <None Remove="View\**" />
+    <None Remove="We\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,10 +28,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="We\_Project\" />
   </ItemGroup>
 
 </Project>

@@ -8,11 +8,6 @@ namespace We._Project.ConnectionFactory
 {
     public class Conexao
     {
-        public IDbConnection _dbConnection { get; private set; }
-
-        public Conexao(IDbConnection DbConnection)
-        {
-
-        }
+        public const string ConnectionString = "Server=.\\sqlexpress;Database=WE;Trusted_Connection=True;";
     }
 }
